@@ -1,0 +1,43 @@
+ body {font-size:62.5%; background-color:rgb(240,240,240); font-family:arial,sans-serif;} /*Font-size: 1.0em = 10px when browser default size is 16px*/
+
+
+#container {width:978px; padding-top:10px; padding-bottom:20px; margin:0 auto; font-size:1.0em;}
+#header, #main, #footer {width:958px; border: 3px solid #C8C8C8; border-radius:7px; margin-bottom:5px;}
+#header { background:#E1E1E1; height:auto !important;}
+#main {clear:both; padding:2px 0 2px 0; background-color:#ffffff; font-size:1.0em; min-height:270px;}
+#footer {clear:both; padding:5px 0 5px 0; background:#E1E1E1; font-size:1.1em !important; overflow:visible !important;}
+
+#sitelogo {z-index:1; margin:5px 0 0 5px;}
+.navbar {width:958px; background-color:rgb(225,225,225); font-family:tahoma,arial,sans-serif; font-size:130% !important}
+.header-admin {margin:10px 0; padding-left:15px; text-align:left;}
+.header-admin a, .header-admin a:visited {text-decoration:none; color:rgb(100,100,100);}
+.header-admin a:hover {text-decoration:underline;}
+
+.content {float:left; width:958px; background-color:rgb(200,200,200); font-size:13px; overflow:visible !important}
+
+/* MAIN MENU */
+.navbar ul {list-style-type:none;}
+.navbar ul li {float:left; background-color:rgb(225,225,225);}
+.navbar ul li a {float:none !important /*Non-IE6*/; display:block; height:3.1em; line-height:3.1em; padding:0 16px 0 16px; text-decoration:none; font-weight:bold; color:rgb(100,100,100); border-right:solid 0px rgb(215,215,215);}
+
+.navbar ul li:hover {position:relative;} /*Sylvain IE hack*/
+.navbar ul li:hover a {background-color:rgb(235,235,235); text-decoration:none;} /*Color main cells hovering mode*/
+
+.content-1col-nobox {width:958px; background-color:rgb(255,255,255); padding-top:3px;}
+
+
+/******************/
+/*  CLEAR FLOATS  */
+/******************/
+#container:after, #header:after, .navbar:after, #main:after, #footer:after, #main div:after {content:"."; display:block; height:0; clear:both; visibility:hidden;}
+p:after {content:"."; display:block; height:0; visibility:hidden;}
+
+
+
+/************/
+/*  FOOTER  */
+/************/
+#footer p {clear:both; line-height:1.3em; text-align:center; color:rgb(125,125,125); font-weight:bold;}
+#footer p.credits {clear:both; font-weight:normal;}
+#footer a, .footer a:visited {text-decoration:underline; color:rgb(125,125,125);}
+#footer a:hover {text-decoration:none; color:rgb(0,0,0);}

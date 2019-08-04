@@ -1,0 +1,243 @@
+var show_fname_chars=72;
+var upload_type='file';
+var form_action;
+
+function $$(elem){return document.getElementById(elem);}
+
+function fileSelected(f)
+{
+    if(!checkExt(f.value))return;
+    var arr = f.value.split(/\\/);
+    var fname = arr[arr.length-1];
+    $(f).next().val(fname);
+    //fname = fname.replace(/(avi|)/,'');
+    var arr = fname.split(/[\.\_\-]+/);
+    var regx = /^(avi|mkv|mpg|mpeg|mov|divx|dvdrip|bdrip)$/i;
+    arr = jQuery.grep(arr, function (a) { return !regx.test(a) });
+    $(f).parents("tr").next().find("input[name=file_title]").val(arr.join(' '));
+}
+
+function openStatusWindow(f1,UID,fnames)
+{
+ if($$('utmodes')) $$('utmodes').style.display='none';
+ site_url = document.location+'';
+ site_url = site_url.replace(/http:\/\//i,'');
+
+ var url = f1.srv_tmp_url.value+'/status.html?'+UID+'='+encodeURIComponent(fnames)+'='+site_url;
+ var d1 = $$('div_'+f1.name);
+ xy = findPos( d1 );
+ $$('progress_div').style.left = xy[0]+'px';
+ $$('progress_div').style.top = xy[1]+'px';
+ $$('progress_frame').style.width = (d1.offsetWidth-3) + 'px';
+ $$('progress_frame').style.height = d1.offsetHeight + 'px';
+ 
+ d1.style.visibility='hidden';
+
+ self.transfer2.location = url;
+}
+
+function StartUpload(f1)
+{
+    form_action = getFormAction(f1);
+    f1.target='xupload';
+    var NF=0;
+    var farr=new Array();
+
+    var err_bad_ext=0, err_no_cat=0;
+    $('input[type="file"]').each( function(i)
+     {
+         if($(this).val() && $('select[name="file_category"]:eq('+i+')').val()==0)err_no_cat=1;
+         if($(this).val()){
+             if(!checkExt($(this).val()))err_bad_ext=1;
+             name = $(this).val().match(/[^\\\/]+$/);
+             if(name && name!='null'){farr.push(name);NF++;}
+         }
+     });
+    if(err_bad_ext){ return false; }
+    if(err_no_cat && category_required){ alert('Choose category for each video!');return false; }
+
+    if(NF<=0){alert('Select at least one file to upload!');return false;};
+    if(f1.tos && !f1.tos.checked){alert('You should read and agree to the Terms of Service');return false;};
+    //if($$('submit_btn')){$$('submit_btn').disabled=true;$$('submit_btn').value='Uploading...';}
+
+    var UID='';
+    for(var i=0;i<12;i++)UID+=''+Math.floor(Math.random() * 10);
+
+    openStatusWindow( f1, UID, farr.join(', ') );
+
+    //window.scrollTo(0,0);
+    form_action = form_action.split('?')[0]+'?upload_id='+UID+'&utype='+utype+'&disk_id='+f1.disk_id.value; //cleaning old query to avoid ReUpload bugs
+
+    setFormAction(f1,form_action);
+    f1.action=form_action;
+}
+
+function checkExt(value)
+{
+    //value = obj.value;
+    if(value=="")return true;
+    var re1 = new RegExp("^.+\.("+ext_allowed+")$","i");
+    if( ext_allowed && !re1.test(value) )
+    {
+        str='';
+        if(ext_allowed)str+="\nOnly these extensions are allowed: "+ext_allowed.replace(/\|/g,',');
+        alert("Extension not allowed for file: \"" + value + '"'+str);
+        return false;
+    }
+
+    return true;
+}
+
+function fixLength(str)
+{
+ var arr = str.split(/\\/);
+ str = arr[arr.length-1];
+ if(str.length<show_fname_chars)return str;
+ return '...'+str.substring(str.length-show_fname_chars-1,str.length);
+}
+
+function getFormAction(f)
+{
+    if(!f)return;
+    for(i=0;i<=f.attributes.length;i++)
+    {
+        if(f.attributes[i] && f.attributes[i].name.toLowerCase()=='action')return f.attributes[i].value;
+    }
+    return '';
+}
+
+function setFormAction(f,val)
+{
+    for(i=0;i<=f.attributes.length;i++)
+    {
+        if(f.attributes[i] && f.attributes[i].name.toLowerCase()=='action')f.attributes[i].value=val;
+    }
+}
+
+function InitUploadSelector(id1,id2,max)
+{
+    if($$(id1))
+    {
+        var multi_selector = new MultiSelector( id1, max );
+        multi_selector.addElement( $$( id2 ) );
+    }
+}
+
+function findPos(obj)
+{
+    var curleft = curtop = 0;
+    if (obj.offsetParent)
+    {
+        do {curleft += obj.offsetLeft;curtop += obj.offsetTop;} while (obj = obj.offsetParent);
+    }
+    return [curleft,curtop];
+}
+
+function changeUploadType(utype)
+{
+    $$('div_file').style.position='absolute';
+    if($$('div_url'))$$('div_url').style.position='absolute';
+    if($$('div_rs'))$$('div_rs').style.position='absolute';
+    if($$('div_tt'))$$('div_tt').style.position='absolute';
+    if($$('div_ff'))$$('div_ff').style.position='absolute';
+    $$('div_'+utype).style.position='static';
+    $('#utmodes > input.active').removeClass('active');
+    $('#r_'+utype).addClass('active');
+}
+
+function jah(url,id,silent)
+{
+    if(id && $$(id) &&!silent)
+    {
+        $$(id).innerHTML='...';
+    }
+    var req;
+    if(window.XMLHttpRequest)
+    {
+        req = new XMLHttpRequest();
+    }
+    else if (window.ActiveXObject)
+    {
+        try {req = new ActiveXObject("Msxml2.XMLHTTP");} catch(e)
+        {
+        	try {req = new ActiveXObject("Microsoft.XMLHTTP");} catch(e) {return 0;}
+        }
+    }
+    else {return 0;}
+
+	req.open("GET", url+'&rnd='+Math.random(), 1);
+	req.onreadystatechange = function()
+    {
+		if(req.readyState == 4)
+        {
+			if (req.status == 200)
+            {
+                if(id && $$(id))
+                {
+                    $$(id).innerHTML=req.responseText;
+                }
+                else
+                {
+                    //alert(req.responseText);
+                    eval(req.responseText);
+                };
+			}
+		}
+	};
+	req.send("");
+    return false;
+};
+
+function submitCommentsForm(f1)
+{
+    if(f1.cmt_name && f1.cmt_name.value==''){alert('Name required');return false;}
+    if(f1.cmt_text.value.length<5){alert("Too short comment");return false;}
+    var url=f1.action+'?op=comment_add';
+    for(i=0;i<f1.elements.length;i++)
+    {
+        url=url+'&'+f1.elements[i].name+'='+f1.elements[i].value;
+    }
+    url = encodeURI(url);
+    //url = url.replace(/\n/g,'_n_');
+    jah(url);
+    return false;
+}
+
+function scaleImg(i)
+{
+  if(i.width>800)
+  {
+    w=i.width;
+    h=i.height;
+    wn = 800;
+    hn = parseInt(i.height*800/i.width);
+    i.width  = wn;
+    i.height = hn;
+    i.onclick = function(){ if(this.width==wn){this.width=w;this.height=h;}else{this.width=wn;this.height=hn;} }
+    return;
+  }
+}
+
+function OpenWin(link,w,h)
+{
+  if(!w)w=720;
+  if(!h)h=700;
+  var popupWin = window.open(link,null, 'width='+w+',height='+h+',status=no,scrollbars=yes,resizable=yes,left=450,top=250');
+  popupWin.focus();
+  return false;
+}
+function player_start()
+{
+    //$('#player_ads').hide();
+    //$('#player_img').hide();
+    //$('#player_code').show();
+//alert(player);
+    //player.sendEvent('PLAY');
+    return false;
+}
+
+function copy(obj)
+{
+  obj.focus();
+  obj.select();
+}
